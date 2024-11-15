@@ -394,9 +394,18 @@ class ActionsPMPR
 						if ($qty > 0){
 							// Init a var for the calculations
 							$tmp_qty = $qty;
-							// Faire requête plus appel dans $db
-							$sql = 'SELECT ';
-							
+							// Request to get the last purchase orders for this product 
+							$sql = 'SELECT c_fd.subprice as cf_subprice, c_fd.qty as cf_qty ';
+							$sql.= 'FROM '.MAIN_DB_PREFIX.'commande_fournisseur as c_f ';
+							$sql.= 'LEFT JOIN '.MAIN_DB_PREFIX.'commande_fournisseurdet AS c_fd ON c_fd.fk_commande = c_f.rowid ';
+							$sql.= 'LEFT JOIN '.MAIN_DB_PREFIX.'product_stock AS p_s ON p_s.fk_product = c_fd.fk_product ';
+							$sql.= 'WHERE c_fd.product = '.$fk_product.' ';
+							$sql.= 'ORDER BY c_f.date_creation DESC';
+
+							$resql = $db->query($sql);
+							if(!$resql){
+								exit(0);
+							}
 							while($tmp_qty > 0){
 								$obj_tmp = $this->db->fetch_object($resql);
 								$subprice = $obj_tmp->cf_subprice;
