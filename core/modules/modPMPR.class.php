@@ -529,4 +529,76 @@ class modPMPR extends DolibarrModules
 		$sql = array();
 		return $this->_remove($sql, $options);
 	}
+
+	/**
+	 * Function to calculate the PMPR of a product
+	 * A quantity to ignore can be determined
+	 * 
+	 * @param		int		$qty			The quantity to consider of the product
+	 * @param		int		$stock			The quantity in stock of the product
+	 * @param		int		$fk_product		ID of the product
+	 */
+	public function calc_PMPR($qty = 0, $stock = 0, $fk_product)
+	{
+		// Request to get the last purchase orders for this product 
+		$sql = 'SELECT c_fd.subprice as cf_subprice, c_fd.remise as cf_remise, c_fd.qty as cf_qty ';
+		$sql.= 'FROM '.MAIN_DB_PREFIX.'commande_fournisseur as c_f ';
+		$sql.= 'LEFT JOIN '.MAIN_DB_PREFIX.'commande_fournisseurdet AS c_fd ON c_fd.fk_commande = c_f.rowid ';
+		$sql.= 'LEFT JOIN '.MAIN_DB_PREFIX.'product_stock AS p_s ON p_s.fk_product = c_fd.fk_product ';
+		$sql.= 'WHERE c_fd.product = '.$fk_product.' ';
+		$sql.= 'ORDER BY c_f.date_creation DESC';
+
+		// Variables
+		$ignrd_qty = $stock - $qty;
+		// Preventing the case where the quantity wanted is higher than the stock
+		if ($ignrd_qty < 0){
+			$ignrd_qty = 0;
+		}
+		$tmp_qty = $qty; // To decrease the quantity until all the needed products are considered
+		$unused_qty = $ignrd_qty; // The quantity of product to ignore
+		$total = 0; // The total price of this quantity of the product
+		$real_price = 0; // The result to print on command line
+
+		$resql = $db->query($sql);
+		if(!$resql){
+			exit(0);
+		}
+		// Looping through the last purchase order for this product to get the needed informations
+		while($tmp_qty > 0){
+			// On each loop, get the next older order
+			$obj_tmp = $this->db->fetch_object($resql);
+			// Buying price for this purchase order
+			$subprice = $obj_tmp->cf_subprice;
+			// Discount on this product
+			$remise = $obj_tmp->cf_remise;
+			// Quantity of this product
+			$prod_qty = $obj_tmp->cf_qty;
+
+			// Checking if the quantity in the order is less important than the quantity needed for the calculations
+			// To update $tmp_qty depending on $prod_qty
+			if ($prod_qty >= $tmp_qty){
+				//$new_pmp = ($new_pmp * ($qty - $tmp_qty) + $tmp_qty * ($subprice * $remise)) / $qty;
+				$total+= $tmp_qty * ($subprice * $remise);
+				if($unused_qty > 0){
+					$total-= $unused_qty * ($subprice * $remise);
+				}
+				$tmp_qty = 0; // Put all the temporary variables at 0 to break out of the loop
+				$unused_qty = 0;
+				// Division to get the real price for margins
+				$real_price = $total / $ignrd_qty; // Need a new variable to prevent the case where the quantity in the command is more important than the stock
+			} else {
+				//$new_pmp = ($new_pmp * ($qty - $tmp_qty) + ($tmp_qty - $prod_qty) * ($subprice * $remise)) / ($qty - $tmp_qty);
+				$total+= $prod_qty * ($subprice * $remise);
+				
+				// Adapt the formula depending on the comparaison between the quantity left after the command and the quantity wanted
+				if ($unused_qty > $prod_qty){
+					$unused_qty-= $prod_qty;
+				} else {
+					$unused_qty = 0;	
+				}
+				// Update the quantity to break from the loop when needed
+				$tmp_qty-= $prod_qty;
+			}
+		}
+	}
 }

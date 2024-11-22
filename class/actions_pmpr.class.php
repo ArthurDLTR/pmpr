@@ -33,6 +33,7 @@ class ActionsPMPR
 
 		require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
 		require_once DOL_DOCUMENT_ROOT.'/product/stock/class/productlot.class.php';
+		require_once '../core/modules/modPMPR.class.php';
 
 		$error = 0;
 		dol_syslog(get_class($this)."::_create start userid=$user->id, fk_product=$fk_product, warehouse_id=$entrepot_id, qty=$qty, type=$type, price=$price, label=$label, inventorycode=$inventorycode, datem=".$datem.", eatby=".$eatby.", sellby=".$sellby.", batch=".$batch.", skip_batch=".json_encode($skip_batch));
@@ -390,35 +391,11 @@ class ActionsPMPR
 						$newpmp = $oldpmp;
 					}
 				} else {
+					// Cases of correction of the stock in Dolibarr or movements out of stock
 					if ($type == 1 || $type == 2){
 						if ($qty > 0){
-							// Init a var for the calculations
-							$tmp_qty = $qty;
-							// Request to get the last purchase orders for this product 
-							$sql = 'SELECT c_fd.subprice as cf_subprice, c_fd.qty as cf_qty ';
-							$sql.= 'FROM '.MAIN_DB_PREFIX.'commande_fournisseur as c_f ';
-							$sql.= 'LEFT JOIN '.MAIN_DB_PREFIX.'commande_fournisseurdet AS c_fd ON c_fd.fk_commande = c_f.rowid ';
-							$sql.= 'LEFT JOIN '.MAIN_DB_PREFIX.'product_stock AS p_s ON p_s.fk_product = c_fd.fk_product ';
-							$sql.= 'WHERE c_fd.product = '.$fk_product.' ';
-							$sql.= 'ORDER BY c_f.date_creation DESC';
-
-							$resql = $db->query($sql);
-							if(!$resql){
-								exit(0);
-							}
-							while($tmp_qty > 0){
-								$obj_tmp = $this->db->fetch_object($resql);
-								$subprice = $obj_tmp->cf_subprice;
-								$prod_qty = $obj_tmp->cf_qty;
-
-								if ($prod_qty > $tmp_qty){
-									$new_pmp = ($new_pmp * ($qty - $tmp_qty) + $tmp_qty * $subprice) / $qty;
-									$tmp_qty = 0;
-								} else {
-									$new_pmp = ($new_pmp * ($qty - $tmp_qty) + ($tmp_qty - $prod_qty) * $subprice) / ($qty - $tmp_qty);
-									$tmp_qty-= $prod_qty;
-								}
-							}
+							$pmpr = new PMPR($db);
+							$newpmp = $pmpr->calc_PMPR($qty, $stock, $fk_product);
 						} else {
 							// If the stock decrease to 0, no need to calculate the AWP
 							$newpmp = $oldpmp;
@@ -428,7 +405,7 @@ class ActionsPMPR
 					//   -> After a stock decrease, we don't change value of the AWP/PMP of a product.
 					// else
 					//   Type of movement unknown
-					$newpmp = $oldpmp;
+					//$newpmp = $oldpmp;
 				}
 			}
 			// Update stock quantity
