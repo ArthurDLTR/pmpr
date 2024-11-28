@@ -54,6 +54,8 @@ if (!$res) {
 }
 
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formfile.class.php';
+require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
+require_once DOL_DOCUMENT_ROOT.'/exports/class/export.class.php';
 
 // Load translation files required
 $langs->loadLangs(array("pmpr@pmpr"));
@@ -61,3 +63,48 @@ $langs->loadLangs(array("pmpr@pmpr"));
 $action = GETPOST('action', 'aZ09');
 
 $sql = "";
+$nb_prod = 0;
+
+//if($resql)
+//{
+    llxHeader("", $langs->trans("DLUArea"), '', '', 0, 0, '', '', '', 'mod-pmpr page-index');
+
+    print load_fiche_titre($langs->trans("DLUArea"), '', 'dlu.png@pmpr');
+
+    print '<form method="POST" id="searchFormList" action"'.$_SERVER["PHP_SELF"].'">';
+    print '<input type="hidden" name="token" value="'.newToken().'">';
+    print '<label for="limit_period">'.$langs->trans('LIMIT_PERIOD').'</label>';
+    print '<input type="date" id="limit_period" name="limit_period" value="'.$limit.'">';
+    print '<br>';
+    print '<input type="submit" value="'.$langs->trans("REFRESH").'">';
+    //print_barre_liste($langs->trans("DLUProducts"), 0, $_SERVER["PHP_SELF"], '', '', '', '', 0, 0, 'product', 0, '', '', 10, 0, 0, 1);
+    print '</form>';
+
+    print '<table class="noborder centpercent">';
+    print '<tr class="liste_titre">';
+    print '<th>'.$langs->trans("PRODUCT_LABEL").'<span class="badge marginleftonlyshort">'.$nb_prod.'</span></th>';
+    print '<th>'.$langs->trans("QTY_DLU").'<span class="badge marginleftonlyshort">'.$nb_prod.'</span></th>';
+    print '<th>'.$langs->trans("QTY").'<span class="badge marginleftonlyshort">'.$nb_prod.'</span></th>';
+    print '<th>'.$langs->trans("BUTTON").'<span class="badge marginleftonlyshort">'.$nb_prod.'</span></th>';
+    print '</tr>';
+
+    $test = '';
+
+    $i = -2;
+    while ($i < $nb_prod)
+    {
+        // Replace $test with $obj->smth
+        print '<tr class="oddeven">';
+        // For this one use $prod->getNomUrl(1) and don't forget to initialize the Product obj before
+        print '<td class="tdoverflowmax200" data-ker="ref">'.$test.'</td>';
+        print '<td class="nowrap">'.$test.'</td>';
+        print '<td class="nowrap">'.$test.'</td>';
+        print '<td class="tdoverflowmax50"><input class="butAction" type="submit" value="'.$langs->trans("UPDATE_STOCK").'"></td>';
+
+        print '</tr>';
+        $i++;
+    }
+//}
+
+print '</table><br>';
+//$db->free($resql);

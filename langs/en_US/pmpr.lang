@@ -47,6 +47,14 @@ PMPRAboutPage = PMPR about page
 #
 DLU = Devaluated products
 DLUProducts = DLU products
+DLUArea = Page for devaluated products
+LIMIT_PERIOD = Limit period
+REFRESH = Refresh
+PRODUCT_LABEL = Product label
+QTY_DLU = Quantity of devaluated products
+QTY = Quantity in stock
+BUTTON = Bouton
+UPDATE_STOCK = Update stock
 
 #
 # Sample widget
