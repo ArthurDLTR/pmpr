@@ -45,6 +45,9 @@ class modPMPR extends DolibarrModules
 
 		$this->db = $db;
 
+		// Loading the lang file
+		$langs->load("pmpr@pmpr");
+
 		// Id for module (must be unique).
 		// Use here a free id (See in Home -> System information -> Dolibarr for list of used modules id).
 		$this->numero = 207401; // TODO Go on page https://wiki.dolibarr.org/index.php/List_of_modules_id to reserve an id number for your module
@@ -54,7 +57,7 @@ class modPMPR extends DolibarrModules
 
 		// Family can be 'base' (core modules),'crm','financial','hr','projects','products','ecm','technic' (transverse modules),'interface' (link with external tools),'other','...'
 		// It is used to group modules by family in module setup page
-		$this->family = "products";
+		$this->family = "other";
 
 		// Module position in the family on 2 digits ('01', '10', '20', ...)
 		$this->module_position = '90';
@@ -87,7 +90,7 @@ class modPMPR extends DolibarrModules
 		// If file is in theme/yourtheme/img directory under name object_pictovalue.png, use this->picto='pictovalue'
 		// If file is in module/img directory under name object_pictovalue.png, use this->picto='pictovalue@module'
 		// To use a supported fa-xxx css style of font awesome, use this->picto='xxx'
-		$this->picto = 'fa-file-o';
+		$this->picto = $this->name.'.png@'.$this->name;
 
 		// Define some features supported by module (triggers, login, substitutions, menus, css, etc...)
 		$this->module_parts = array(
@@ -119,7 +122,7 @@ class modPMPR extends DolibarrModules
 			),
 			// Set here all hooks context managed by module. To find available hook context, make a "grep -r '>initHooks(' *" on source code. You can also set hook context to 'all'
 			/* BEGIN MODULEBUILDER HOOKSCONTEXTS */
-			'hooks' => array('_create'),
+			'hooks' => array('mouvementstock'),
 			/* END MODULEBUILDER HOOKSCONTEXTS */
 			// Set this to 1 if features of module are opened to external users
 			'moduleforexternal' => 0,
@@ -132,7 +135,7 @@ class modPMPR extends DolibarrModules
 		$this->dirs = array("/pmpr/temp");
 
 		// Config pages. Put here list of php page, stored into pmpr/admin directory, to use to setup module.
-		$this->config_page_url = array("setup.php@pmpr");
+		$this->config_page_url = array("setup.php@".$this->name);
 
 		// Dependencies
 		// A condition to hide module
@@ -178,7 +181,7 @@ class modPMPR extends DolibarrModules
 
 		// Array to add new pages in new tabs
 		/* BEGIN MODULEBUILDER TABS */
-		$this->tabs = array();
+		//$this->tabs = array('product:+DevaluatedProducts:DLU:pmpr@pmpr:/pmpr/dluproducts.php?id=__ID__');
 		/* END MODULEBUILDER TABS */
 		// Example:
 		// To add a new tab identified by code tabname1
@@ -309,21 +312,21 @@ class modPMPR extends DolibarrModules
 		$r = 0;
 		// Add here entries to declare new menus
 		/* BEGIN MODULEBUILDER TOPMENU */
+		
 		$this->menu[$r++] = array(
-			'fk_menu'=>'', // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
-			'type'=>'top', // This is a Top menu entry
-			'titre'=>'ModulePMPRName',
-			'prefix' => img_picto('', $this->picto, 'class="pictofixedwidth valignmiddle"'),
-			'mainmenu'=>'pmpr',
-			'leftmenu'=>'',
-			'url'=>'/pmpr/pmprindex.php',
+			'fk_menu'=>'fk_mainmenu=products', // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+			'type'=>'left', // This is a Top menu entry
+			'titre'=>'DLU',
+			'leftmenu'=>'DLUProducts',
+			'url'=>'/pmpr/dluindex.php',
 			'langs'=>'pmpr@pmpr', // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
-			'position'=>1000 + $r,
+			'position'=>100 + $r,
 			'enabled'=>'isModEnabled("pmpr")', // Define condition to show or hide menu entry. Use 'isModEnabled("pmpr")' if entry must be visible if module is enabled.
 			'perms'=>'1', // Use 'perms'=>'$user->hasRight("pmpr", "myobject", "read")' if you want your menu with a permission rules
 			'target'=>'',
 			'user'=>2, // 0=Menu for internal users, 1=external users, 2=both
 		);
+		
 		/* END MODULEBUILDER TOPMENU */
 
 		/* BEGIN MODULEBUILDER LEFTMENU MYOBJECT */
@@ -382,7 +385,7 @@ class modPMPR extends DolibarrModules
 		$r = 1;
 		/* BEGIN MODULEBUILDER EXPORT MYOBJECT */
 		/*
-		$langs->load("pmpr@pmpr");
+		
 		$this->export_code[$r] = $this->rights_class.'_'.$r;
 		$this->export_label[$r] = 'MyObjectLines';	// Translation key (used only if key ExportDataset_xxx_z not found)
 		$this->export_icon[$r] = $this->picto;

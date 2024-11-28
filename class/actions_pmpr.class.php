@@ -1,6 +1,17 @@
 <?php
 class ActionsPMPR
 {
+
+	/**
+	 * Overloading _create function : replacing the parent's function with the one below
+	 * 	@param		array			$parameters			Meta data of the hook (context, etc...)
+	 * 	@param		MouvementStock	$object				The object you want to process
+	 * 	@param						$action				Current action (if set)
+	 */
+	function stockMouvementCreate($parameters, $object, $action){
+
+	}
+
     /**
      * Overloading _create function : replacing the parent's function with the one below
      * 
@@ -26,7 +37,7 @@ class ActionsPMPR
 	 * 	@param		boolean			$force_update_batch	Allows to add batch stock movement even if $product doesn't use batch anymore
 	 *	@return		int									Return integer <0 if KO, 0 if fk_product is null or product id does not exists, >0 if OK
 	 */
-    public function _create($user, $fk_product, $entrepot_id, $qty, $type, $price = 0, $label = '', $inventorycode = '', $datem = '', $eatby = '', $sellby = '', $batch = '', $skip_batch = false, $id_product_batch = 0, $disablestockchangeforsubproduct = 0, $donotcleanemptylines = 0, $force_update_batch = false)
+    public function stockMouvementCreate($user, $fk_product, $entrepot_id, $qty, $type, $price = 0, $label = '', $inventorycode = '', $datem = '', $eatby = '', $sellby = '', $batch = '', $skip_batch = false, $id_product_batch = 0, $disablestockchangeforsubproduct = 0, $donotcleanemptylines = 0, $force_update_batch = false)
 	{
 		// phpcs:enable
 		global $conf, $langs;

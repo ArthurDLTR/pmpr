@@ -43,10 +43,10 @@ PMPRAbout = About PMPR
 PMPRAboutPage = PMPR about page
 
 #
-# Sample page
+# Devaluated products page
 #
-PMPRArea = Home PMPR
-MyPageName = My page name
+DLU = Devaluated products
+DLUProducts = DLU products
 
 #
 # Sample widget
