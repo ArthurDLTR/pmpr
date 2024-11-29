@@ -43,16 +43,18 @@ PMPRAbout = About PMPR
 PMPRAboutPage = PMPR about page
 
 #
-# Devaluated products page
+# Devalued products page
 #
-DLU = Devaluated products
+DLU = Devalued products
 DLUProducts = DLU products
-DLUArea = Page for devaluated products
+DLUArea = Page for devalued products
 LIMIT_PERIOD = Limit period
 REFRESH = Refresh
+PRODUCT_REF = Product ref
 PRODUCT_LABEL = Product label
-QTY_DLU = Quantity of devaluated products
+QTY_DLU = Quantity of devalued products
 QTY = Quantity in stock
+TOTAL_QTY = Total quantity in stock
 BUTTON = Bouton
 UPDATE_STOCK = Update stock
 
