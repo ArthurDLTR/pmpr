@@ -25,9 +25,9 @@ ModulePMPRDesc = A module to improve the WAP Dolibarr function by considering th
 #
 # Admin page
 #
-PMPRSetup = PMPR setup
-Settings = Settings
-PMPRSetupPage = PMPR setup page
+PMPRSetup = Paramètres PMPR
+Settings = Paramètres
+PMPRSetupPage = PMPR page des paramètres
 NewSection=New section
 PMPR_MYPARAM1 = My param 1
 PMPR_MYPARAM1Tooltip = My param 1 tooltip
@@ -38,28 +38,28 @@ PMPR_MYPARAM2Tooltip=My param 2 tooltip
 #
 # About page
 #
-About = About
-PMPRAbout = About PMPR
-PMPRAboutPage = PMPR about page
+About = A propos
+PMPRAbout = A propos du PMPR
+PMPRAboutPage = PMPR Page A propos
 
 #
 # Devalued products page
 #
-DLU = Devalued products
-DLUProducts = DLU products
-DLUArea = Page for devalued products
-LIMIT_PERIOD = Limit period
-REFRESH = Refresh
-PRODUCT_REF = Product ref
-PRODUCT_LABEL = Product label
-QTY_DLU = Quantity of devalued products
-QTY = Quantity in stock
-TOTAL_QTY = Total quantity in stock
-BUTTON = Button
-UPDATE_STOCK = Update stock
+DLU = Date limite d'utilisation
+DLUProducts = Produits DLU
+DLUArea = Page pour produits dévalués
+LIMIT_PERIOD = Période limite
+REFRESH = Rafraichir
+PRODUCT_REF = Ref. produit
+PRODUCT_LABEL = Nom du produit
+QTY_DLU = Quantité dévaluée de produits
+QTY = Quantité en stock
+TOTAL_QTY = Quantité totale en stock
+BUTTON = Bouton
+UPDATE_STOCK = Actualiser stock
 
 #
 # Sample widget
 #
-MyWidget = My widget
-MyWidgetDescription = My widget description
+MyWidget = Mon widget
+MyWidgetDescription = Ma widget description

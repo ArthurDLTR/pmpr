@@ -173,7 +173,7 @@ if($resql)
                 print '<td class="tdoverflowmax200">'.$obj->prod_label.'</td>';
                 print '<td class="nowrap">'.$stock.'</td>';
                 print '<td class="nowrap">'.$obj->prod_stock.'</td>';
-                print '<td class="tdoverflowmax50"><form method="POST" action"'.$_SERVER["PHP_SELF"].'"><input type="hidden" name="token" value="'.newToken().'"><input type="hidden" id="limit_period" name="limit_period" value="'.$limit.'"><input type="hidden" name="stock_rmv" value="'.$stock.'"><input type="hidden" name="id_prod" value="'.$prod->id.'"><input class="butAction" name="update-btn" type="submit" value="'.$langs->trans("UPDATE_STOCK").'"></form></td>';
+                print '<td class="tdoverflowmax100"><form method="POST" action"'.$_SERVER["PHP_SELF"].'"><input type="hidden" name="token" value="'.newToken().'"><input type="hidden" id="limit_period" name="limit_period" value="'.$limit.'"><input type="hidden" name="stock_rmv" value="'.$stock.'"><input type="hidden" name="id_prod" value="'.$prod->id.'"><input class="butAction" name="update-btn" type="submit" value="'.$langs->trans("UPDATE_STOCK").'"></form></td>';
 
                 print '</tr>';
 
