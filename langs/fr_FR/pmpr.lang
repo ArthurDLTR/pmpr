@@ -59,6 +59,11 @@ BUTTON = Bouton
 UPDATE_STOCK = Actualiser stock
 
 #
+# Fields in select list in commands
+#
+LATEST_PRICE = Latest price 
+
+#
 # Sample widget
 #
 MyWidget = Mon widget

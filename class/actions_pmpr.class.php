@@ -1,6 +1,58 @@
 <?php
+/* Copyright (C) 2024 Arthur LENOBLE <arthurl52100@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
+/**
+ *  \file       htdocs/pmpr/class/actions_pmpr.class.php
+ *  \ingroup    pmpr
+ *  \brief      class for the hook actions of pmpr
+ */
+
 class ActionsPMPR
 {
+
+
+	/**
+	 * Overloading the addMoreMassActions function : replacing the parent function with this one below
+	 * @param 	parameters		
+	 */
+	function formAddObjectLine($parameters, &$model, &$action, $hookmanager)
+	{
+		global $langs, $conf;
+
+		global $mysoc, $soc, $line;
+
+		foreach ($line as $tr){
+			if(get_class($tr) != 'TraceableDB'){
+				print 'tr : '.$tr.'<br>';
+				foreach($tr as $td)
+			print 'Td : '.$td.'<br>';
+			}
+		}
+
+		if(in_array($parameters['currentcontext'], 'ordercard')){
+			$ret = '<p value="PMPR">Pmpr : prix calculé dynamiquement (je crois)</p>';
+
+			$this->resprints = $ret;
+		}
+
+
+		return 0;
+	}
+
 
 	/**
 	 * Overloading _create function : replacing the parent's function with the one below
@@ -37,7 +89,8 @@ class ActionsPMPR
 	 * 	@param		boolean			$force_update_batch	Allows to add batch stock movement even if $product doesn't use batch anymore
 	 *	@return		int									Return integer <0 if KO, 0 if fk_product is null or product id does not exists, >0 if OK
 	 */
-    public function stockMouvementCreate($user, $fk_product, $entrepot_id, $qty, $type, $price = 0, $label = '', $inventorycode = '', $datem = '', $eatby = '', $sellby = '', $batch = '', $skip_batch = false, $id_product_batch = 0, $disablestockchangeforsubproduct = 0, $donotcleanemptylines = 0, $force_update_batch = false)
+    /*
+	public function stockMouvementCreate($user, $fk_product, $entrepot_id, $qty, $type, $price = 0, $label = '', $inventorycode = '', $datem = '', $eatby = '', $sellby = '', $batch = '', $skip_batch = false, $id_product_batch = 0, $disablestockchangeforsubproduct = 0, $donotcleanemptylines = 0, $force_update_batch = false)
 	{
 		// phpcs:enable
 		global $conf, $langs;
@@ -517,4 +570,5 @@ class ActionsPMPR
 			return -6;
 		}
 	}
+		*/
 }
