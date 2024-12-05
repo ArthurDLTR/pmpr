@@ -20,7 +20,7 @@
 # Module label 'ModulePMPRName'
 ModulePMPRName = PMPR
 # Module description 'ModulePMPRDesc'
-ModulePMPRDesc = A module to improve the WAP Dolibarr function by considering the shipments in the determination fo the WAP
+ModulePMPRDesc = Module pour améliorer le PMP calculé par Dolibarr en prenant en compte les sorties de stocks dans la détermination du PMP pour chaque produit
 
 #
 # Admin page
@@ -45,14 +45,14 @@ PMPRAboutPage = PMPR Page A propos
 #
 # Devalued products page
 #
-DLU = Date limite d'utilisation
+DLU = Durée limite d'utilisation
 DLUProducts = Produits DLU
 DLUArea = Page pour produits dévalués
 LIMIT_PERIOD = Période limite
 REFRESH = Rafraichir
 PRODUCT_REF = Ref. produit
 PRODUCT_LABEL = Nom du produit
-QTY_DLU = Quantité dévaluée de produits
+QTY_DLU = Quantité dévaluée
 QTY = Quantité en stock
 TOTAL_QTY = Quantité totale en stock
 BUTTON = Bouton

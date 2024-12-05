@@ -81,21 +81,23 @@ if (GETPOST('id_prod', 'alpha')){
 
 if (GETPOSTISSET('update-btn', 'bool')){
     if (GETPOST('stock_rmv', 'alpha') && GETPOST('id_prod', 'alpha')){
+        // First request to update the value of reel in product_stock
         $sql = "UPDATE ".MAIN_DB_PREFIX."product_stock as p_s ";
         $sql.= "SET p_s.reel = p_s.reel - ".$stock_rmv;
         $sql.= " WHERE p_s.fk_product = ".$id_prod.";";
-        $sql.= "UPDATE ".MAIN_DB_PREFIX."product as p ";
+        $resql = $db->query($sql);
+        $db->free($resql);
+
+        // Second request to update the value of stock in product
+        $sql = "UPDATE ".MAIN_DB_PREFIX."product as p ";
         $sql.= "SET p.stock = p.stock - ".$stock_rmv;
         $sql.= " WHERE p.rowid = ".$id_prod;
+        $resql = $db->query($sql);
+        $db->free($resql);
 
     }
 }
 
-$resql = $db->query($sql);
-$numsofrows = $db->num_rows($resql);
-
-
-$db->free($resql);
 
 /*
  * View
