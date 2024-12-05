@@ -90,7 +90,8 @@ if (GETPOSTISSET('update-btn', 'bool')){
 
         // Second request to update the value of stock in product
         $sql = "UPDATE ".MAIN_DB_PREFIX."product as p ";
-        $sql.= "SET p.stock = p.stock - ".$stock_rmv;
+        $sql.= "JOIN ".MAIN_DB_PREFIX."product_stock as p_s ON p.rowid = p_s.fk_product ";
+        $sql.= "SET p.stock = p_s.reel";
         $sql.= " WHERE p.rowid = ".$id_prod;
         $resql = $db->query($sql);
         $db->free($resql);
