@@ -57,6 +57,7 @@ QTY = Quantité en stock
 TOTAL_QTY = Quantité totale en stock
 BUTTON = Bouton
 UPDATE_STOCK = Actualiser stock
+WAREHOUSE_CHOICE = Choix de l'entrepôt
 
 #
 # Fields in select list in commands

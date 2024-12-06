@@ -31,7 +31,7 @@
  */
 
 require_once DOL_DOCUMENT_ROOT.'/core/triggers/dolibarrtriggers.class.php';
-
+require_once DOL_DOCUMENT_ROOT.'/custom/pmpr/core/modules/modPMPR.class.php';
 
 /**
  *  Class of triggers for MyModule module
@@ -68,7 +68,7 @@ class InterfacePmprTriggers extends DolibarrTriggers
 	{
 		// Put here code you want to execute when a Dolibarr business events occurs.
 		// Data and type of action are stored into $object and $action
-		dol_syslog("Trigger pour les mouvements de stock du pmpr avec action : ".$action." et id : ".$object->id);
+		//dol_syslog("Trigger pour les mouvements de stock du pmpr avec action : ".$action." et id : ".$object->id);
 		
 		// You can isolate code for each action in a separate method: this method should be named like the trigger in camelCase.
 		// For example : COMPANY_CREATE => public function companyCreate($action, $object, User $user, Translate $langs, Conf $conf)
@@ -122,8 +122,11 @@ class InterfacePmprTriggers extends DolibarrTriggers
 
 			//Stock movement
 			case 'STOCK_MOVEMENT':
-				dol_syslog("Trigger pour les mouvements de stock du pmpr avec action : ".$action." et id : ".$object->id);
-
+				//dol_syslog("Trigger pour les mouvements de stock du pmpr avec action : ".$action." et id : ".$object->id);
+				dol_syslog("Class MouvementStock : prod_id : ".$object->product_id.", type de mouvement : ".$object->type.", quantité concerné : ".$object->qty);
+				$pmpr = new modPMPR($db);
+				$newpmp = $pmpr->calc_PMPR($object->product_id);
+				dol_syslog("PMPR calculé, sa valeur : ".$newpmp);
 			//MYECMDIR
 			//case 'MYECMDIR_CREATE':
 			//case 'MYECMDIR_MODIFY':

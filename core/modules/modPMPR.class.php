@@ -327,6 +327,20 @@ class modPMPR extends DolibarrModules
 			'user'=>2, // 0=Menu for internal users, 1=external users, 2=both
 		);
 		
+		$this->menu[$r++] = array(
+			'fk_menu'=>'fk_mainmenu=products', // '' if this is a top menu. For left menu, use 'fk_mainmenu=xxx' or 'fk_mainmenu=xxx,fk_leftmenu=yyy' where xxx is mainmenucode and yyy is a leftmenucode
+			'type'=>'left', // This is a Top menu entry
+			'titre'=>'DLU_bis',
+			'leftmenu'=>'DLUProducts',
+			'url'=>'/pmpr/dluindex_bis.php',
+			'langs'=>'pmpr@pmpr', // Lang file to use (without .lang) by module. File must be in langs/code_CODE/ directory.
+			'position'=>100 + $r,
+			'enabled'=>'isModEnabled("pmpr")', // Define condition to show or hide menu entry. Use 'isModEnabled("pmpr")' if entry must be visible if module is enabled.
+			'perms'=>'1', // Use 'perms'=>'$user->hasRight("pmpr", "myobject", "read")' if you want your menu with a permission rules
+			'target'=>'',
+			'user'=>2, // 0=Menu for internal users, 1=external users, 2=both
+		);
+
 		/* END MODULEBUILDER TOPMENU */
 
 		/* BEGIN MODULEBUILDER LEFTMENU MYOBJECT */
@@ -537,18 +551,28 @@ class modPMPR extends DolibarrModules
 	 * Function to calculate the PMPR of a product
 	 * A quantity to ignore can be determined
 	 * 
-	 * @param		int		$qty			The quantity to consider of the product
-	 * @param		int		$stock			The quantity in stock of the product
 	 * @param		int		$fk_product		ID of the product
+	 * @param		int		$qty			The quantity to not consider of the product, useful only for the dynamic calculation of the pmpr in order card
 	 */
-	public function calc_PMPR($qty = 0, $stock = 0, $fk_product)
+	public function calc_PMPR($fk_product, $qty = 0)
 	{
+		global $db;
+		dol_syslog("Calcul du PMPR en cours...");
+
+		// Request to get the informations (stock) about the product
+		$sql = 'SELECT p.stock as prod_stock FROM '.MAIN_DB_PREFIX.'product AS p WHERE p.rowid = '.$fk_product;
+		$resql = $db->query($sql);
+		$obj = $db->fetch_object($resql);
+		$stock = $obj->prod_stock;
+
+		dol_syslog("Stock du produit ".$fk_product." : ".$stock);
+
 		// Request to get the last purchase orders for this product 
 		$sql = 'SELECT c_fd.subprice as cf_subprice, c_fd.remise as cf_remise, c_fd.qty as cf_qty ';
 		$sql.= 'FROM '.MAIN_DB_PREFIX.'commande_fournisseur as c_f ';
 		$sql.= 'LEFT JOIN '.MAIN_DB_PREFIX.'commande_fournisseurdet AS c_fd ON c_fd.fk_commande = c_f.rowid ';
 		$sql.= 'LEFT JOIN '.MAIN_DB_PREFIX.'product_stock AS p_s ON p_s.fk_product = c_fd.fk_product ';
-		$sql.= 'WHERE c_fd.product = '.$fk_product.' ';
+		$sql.= 'WHERE c_fd.fk_product = '.$fk_product.' ';
 		$sql.= 'ORDER BY c_f.date_creation DESC';
 
 		// Variables
@@ -566,10 +590,11 @@ class modPMPR extends DolibarrModules
 		if(!$resql){
 			exit(0);
 		}
+		dol_syslog(" Variables : quantitée : ".$qty." quantitée une fois retiré les produits à ignorer : ".$ignrd_qty);
 		// Looping through the last purchase order for this product to get the needed informations
 		while($tmp_qty > 0){
 			// On each loop, get the next older order
-			$obj_tmp = $this->db->fetch_object($resql);
+			$obj_tmp = $db->fetch_object($resql);
 			// Buying price for this purchase order
 			$subprice = $obj_tmp->cf_subprice;
 			// Discount on this product
@@ -579,6 +604,8 @@ class modPMPR extends DolibarrModules
 
 			// Checking if the quantity in the order is less important than the quantity needed for the calculations
 			// To update $tmp_qty depending on $prod_qty
+
+			// A refaire completement car plus du tout adapté dans le cas où on utilise un trigger
 			if ($prod_qty >= $tmp_qty){
 				//$new_pmp = ($new_pmp * ($qty - $tmp_qty) + $tmp_qty * ($subprice * $remise)) / $qty;
 				$total+= $tmp_qty * ($subprice * $remise);
@@ -603,5 +630,7 @@ class modPMPR extends DolibarrModules
 				$tmp_qty-= $prod_qty;
 			}
 		}
+		dol_syslog("total : ".$total." Prix réel : ".$real_price." quantité prise en compte : ".$unused_qty);
+		return $real_price;
 	}
 }

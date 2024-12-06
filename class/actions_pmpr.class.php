@@ -33,15 +33,24 @@ class ActionsPMPR
 	{
 		global $langs, $conf;
 
-		global $mysoc, $soc, $line;
-
-		foreach ($line as $tr){
-			if(get_class($tr) != 'TraceableDB'){
+		global $mysoc, $soc;
+		// $line vide
+		// $form ne contient pas d'infos intéressantes
+		// $object rien non plus 
+		// $mysoc contient les informations de ma société dans Doliabrr
+		// $soc contient les inforamtions de la société concerné par la commande 
+		/*
+		foreach ($object as $tr){
+			if(get_class($tr) != 'TraceableDB'|| get_class($tr) != 'OrderLine'){
 				print 'tr : '.$tr.'<br>';
 				foreach($tr as $td)
-			print 'Td : '.$td.'<br>';
+				if(get_class($td) != 'TraceableDB'|| get_class($td) != 'OrderLine'){
+					print 'td : '.$td.'<br>';
+				}
 			}
 		}
+		*/
+		//dol_syslog("Hook enclenché dans une commande client par le module PMPR");
 
 		if(in_array($parameters['currentcontext'], 'ordercard')){
 			$ret = '<p value="PMPR">Pmpr : prix calculé dynamiquement (je crois)</p>';

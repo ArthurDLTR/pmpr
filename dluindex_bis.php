@@ -56,6 +56,7 @@ if (!$res) {
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formfile.class.php';
 require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
 require_once DOL_DOCUMENT_ROOT.'/exports/class/export.class.php';
+require_once DOL_DOCUMENT_ROOT.'/product/stock/class/mouvementstock.class.php';
 
 // Load translation files required
 $langs->loadLangs(array("pmpr@pmpr"));
@@ -65,10 +66,9 @@ $langs->loadLangs(array("pmpr@pmpr"));
  */
 $action = GETPOST('action', 'aZ09');
 $array = dol_getdate(dol_now());
+$limit = ($array['year']-1).'-'.$array['mon'].'-'.$array['mday'];
 if(GETPOST('limit_period', 'alpha')){
     $limit = GETPOST('limit_period', 'alpha');
-} else {
-    $limit = ($array['year']-1).'-'.$array['mon'].'-'.$array['mday'];
 }
 
 if (GETPOST('stock_rmv', 'alpha')){
@@ -79,24 +79,34 @@ if (GETPOST('id_prod', 'alpha')){
     $id_prod = GETPOST('id_prod', 'alpha');
 }
 
-if (GETPOSTISSET('update-btn', 'bool')){
-    if (GETPOST('stock_rmv', 'alpha') && GETPOST('id_prod', 'alpha')){
-        // First request to update the value of reel in product_stock
-        $sql = "UPDATE ".MAIN_DB_PREFIX."product_stock as p_s ";
-        $sql.= "SET p_s.reel = p_s.reel - ".$stock_rmv;
-        $sql.= " WHERE p_s.fk_product = ".$id_prod." AND p_s.fk_entrepot = 1";
-        $resql = $db->query($sql);
-        $db->free($resql);
+$id_entrepot = 1;
+//print 'Entrepot sélectionné : '.GETPOST('id_entrepot', 'alpha');
+if(GETPOST('id_entrepot', 'alpha')){
+    $id_entrepot = GETPOST('id_entrepot', 'alpha');
+    //$sql = "SELECT e.rowid as ent_id, ";
+}
 
-        // Second request to update the value of stock in product
-        $sql = "UPDATE ".MAIN_DB_PREFIX."product as p ";
-        $sql.= "JOIN ".MAIN_DB_PREFIX."product_stock as p_s ON p.rowid = p_s.fk_product ";
-        $sql.= "SET p.stock = p_s.reel";
-        $sql.= " WHERE p.rowid = ".$id_prod;
-        $resql = $db->query($sql);
-        $db->free($resql);
+if (GETPOSTISSET('update-btn', 'bool') && GETPOST('stock_rmv', 'alpha') && GETPOST('id_prod', 'alpha')){
+    $mv_stock = new MouvementStock($db);
+    
+    $mv_stock->_create($user, $id_prod, $id_entrepot, -$stock_rmv, 2);
 
-    }
+    // First request to update the value of reel in product_stock
+    $sql = "UPDATE ".MAIN_DB_PREFIX."product_stock as p_s ";
+    $sql.= "SET p_s.reel = p_s.reel - ".$stock_rmv;
+    $sql.= " WHERE p_s.fk_product = ".$id_prod." AND p_s.fk_entrepot = ".$id_entrepot;
+    $resql = $db->query($sql);
+    $db->free($resql);
+
+    // Second request to update the value of stock in product
+    $sql = "UPDATE ".MAIN_DB_PREFIX."product as p ";
+    $sql.= "JOIN ".MAIN_DB_PREFIX."product_stock as p_s ON p.rowid = p_s.fk_product ";
+    $sql.= "SET p.stock = p_s.reel";
+    $sql.= " WHERE p.rowid = ".$id_prod;
+    $resql = $db->query($sql);
+    $db->free($resql);
+
+    
 }
 
 
@@ -104,17 +114,8 @@ if (GETPOSTISSET('update-btn', 'bool')){
  * View
  */
 
-$sql = "SELECT p.label AS prod_label, p.rowid as prod_id, p.ref as prod_ref, p.description as prod_descr, p.tobuy as prod_tobuy, p.tosell as prod_tosell, p.entity as prod_entity, p.stock AS prod_stock, c_fd.qty AS comm_qty, c_f.date_commande AS comm_date FROM ".MAIN_DB_PREFIX."commande_fournisseur as c_f ";
-$sql.= "LEFT JOIN ".MAIN_DB_PREFIX."commande_fournisseurdet AS c_fd ON c_fd.fk_commande = c_f.rowid ";
-$sql.= "LEFT JOIN ".MAIN_DB_PREFIX."product_stock AS p_s ON p_s.fk_product = c_fd.fk_product ";
-$sql.= "LEFT JOIN ".MAIN_DB_PREFIX."product AS p ON p.rowid = p_s.fk_product ";
-$sql.= "ORDER BY p.rowid, c_f.date_commande DESC";
 
 llxHeader("", $langs->trans("DLUArea"), '', '', 0, 0, '', '', '', 'mod-pmpr page-index');
-
-$resql = $db->query($sql);
-
-$nb_prod_max = $db->num_rows($resql);
 
 print load_fiche_titre($langs->trans("DLUArea"), '', 'dlu.png@pmpr');
 
@@ -123,9 +124,27 @@ print '<input type="hidden" name="token" value="'.newToken().'">';
 print '<label for="limit_period">'.$langs->trans('LIMIT_PERIOD').' : </label>';
 print '<input type="date" id="limit_period" name="limit_period" value="'.$limit.'">';
 print '<br>';
-print '<input type="submit" value="'.$langs->trans("REFRESH").'">';
+
+/*
+$sql = 'SELECT e.rowid as rowid, e.ref as ref FROM '.MAIN_DB_PREFIX.'entrepot AS e';
+$resql = $db->query($sql);
+$nb_entrepots = $db->num_rows($resql);
+print '<label for="id_entrepot">'.$langs->trans('WAREHOUSE_CHOICE').' : </label>';
+print '<select id="id_entrepot" name="id_entrepot">';
+$i = 0;
+while ($i < $nb_entrepots){
+    $obj = $db->fetch_object($resql);
+    print '<option value="'.$obj->rowid.'">'.$obj->ref.'</option>';
+    $i++;
+}
+print '</select>';
+
+print '<br>';
+*/
+print '<input type="submit" class="butAction" value="'.$langs->trans("REFRESH").'">';
 //print_barre_liste($langs->trans("DLUProducts"), 0, $_SERVER["PHP_SELF"], '', '', '', '', 0, 0, 'product', 0, '', '', 10, 0, 0, 1);
 print '</form>';
+print '<br>';
 
 print '<table class="noborder centpercent">';
 print '<tr class="liste_titre">';
@@ -135,6 +154,18 @@ print '<th>'.$langs->trans("QTY_DLU").'</th>';
 print '<th>'.$langs->trans("TOTAL_QTY").'</th>';
 print '<th>'.$langs->trans("BUTTON").'</th>';
 print '</tr>';
+
+
+$sql = "SELECT p.label AS prod_label, p.rowid as prod_id, p.ref as prod_ref, p.description as prod_descr, p.tobuy as prod_tobuy, p.tosell as prod_tosell, p.entity as prod_entity, p_s.reel AS prod_stock, c_fd.qty AS comm_qty, c_f.date_commande AS comm_date FROM ".MAIN_DB_PREFIX."commande_fournisseur as c_f ";
+$sql.= "LEFT JOIN ".MAIN_DB_PREFIX."commande_fournisseurdet AS c_fd ON c_fd.fk_commande = c_f.rowid ";
+$sql.= "LEFT JOIN ".MAIN_DB_PREFIX."product_stock AS p_s ON p_s.fk_product = c_fd.fk_product ";
+$sql.= "LEFT JOIN ".MAIN_DB_PREFIX."product AS p ON p.rowid = p_s.fk_product ";
+//$sql.= "WHERE p_s.fk_entrepot = ".$id_entrepot;
+$sql.= "ORDER BY p.rowid, c_f.date_commande DESC";
+
+$resql = $db->query($sql);
+
+$nb_prod_max = $db->num_rows($resql);
 
 $prod = new Product($db);
 if($resql)
@@ -176,7 +207,33 @@ if($resql)
                 print '<td class="tdoverflowmax200">'.$obj->prod_label.'</td>';
                 print '<td class="nowrap">'.$stock.'</td>';
                 print '<td class="nowrap">'.$obj->prod_stock.'</td>';
-                print '<td class="tdoverflowmax100"><form method="POST" action"'.$_SERVER["PHP_SELF"].'"><input type="hidden" name="token" value="'.newToken().'"><input type="hidden" id="limit_period" name="limit_period" value="'.$limit.'"><input type="hidden" name="stock_rmv" value="'.$stock.'"><input type="hidden" name="id_prod" value="'.$prod->id.'"><input class="butAction" name="update-btn" type="submit" value="'.$langs->trans("UPDATE_STOCK").'"></form></td>';
+                print '<td class="tdoverflowmax200">
+                <form method="POST" action"'.$_SERVER["PHP_SELF"].'">
+                <input type="hidden" name="token" value="'.newToken().'">
+                <input type="hidden" id="limit_period" name="limit_period" value="'.$limit.'">
+                <input type="hidden" name="stock_rmv" value="'.$stock.'">
+                <input type="hidden" name="id_prod" value="'.$prod->id.'">
+                <select id="id_entrepot" name="id_entrepot">';
+                /* Besoin de revoir ça pour que ça fonctionne car pour le moment, la requête ne remplace pas celle d'au-dessus
+                $sql_bis = 'SELECT e.rowid as entre_rowid, e.ref as entre_ref, e.lieu as lieu FROM '.MAIN_DB_PREFIX.'entrepot AS e';
+                $resql_bis = $db->query($sql_bis);
+                $nb_warehouse = $db->num_rows($resql_bis);
+                print '<option></option>';
+                $i = 0;
+                while ($i < $nb_warehouse){
+                    $obj_bis = $db->fetch_object($resql);
+                    foreach($obj_bis as $line){
+                        dol_syslog("Ligne de l'objet bis : ".$line);
+                    }
+                    print '<option>Entrepot</option>';
+                    print '<option value="'.$obj_bis->entre_rowid.'">'.$obj_bis->lieu.'</option>';
+                    $i++;
+                }
+                */
+                
+                print '</select>
+                <input class="butAction" name="update-btn" type="submit" value="'.$langs->trans("UPDATE_STOCK").'">
+                </form></td>';
 
                 print '</tr>';
 
