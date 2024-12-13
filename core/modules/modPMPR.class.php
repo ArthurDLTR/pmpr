@@ -552,7 +552,7 @@ class modPMPR extends DolibarrModules
 	 * A quantity to ignore can be determined
 	 * 
 	 * @param		int		$fk_product		ID of the product
-	 * @param		int		$qty			The quantity to not consider of the product, useful only for the dynamic calculation of the pmpr in order card
+	 * @param		int		$qty			The quantity to ignore of the product, useful only for the dynamic calculation of the pmpr in order card
 	 */
 	public function calc_PMPR($fk_product, $qty = 0)
 	{
@@ -564,11 +564,12 @@ class modPMPR extends DolibarrModules
 		$resql = $db->query($sql);
 		$obj = $db->fetch_object($resql);
 		$stock = $obj->prod_stock;
+		$db->free($resql);
 
 		dol_syslog("Stock du produit ".$fk_product." : ".$stock);
 
 		// Request to get the last purchase orders for this product 
-		$sql = 'SELECT c_fd.subprice as cf_subprice, c_fd.remise as cf_remise, c_fd.qty as cf_qty ';
+		$sql = 'SELECT c_fd.subprice as cf_subprice, c_fd.remise_percent as cf_remise, c_fd.qty as cf_qty ';
 		$sql.= 'FROM '.MAIN_DB_PREFIX.'commande_fournisseur as c_f ';
 		$sql.= 'LEFT JOIN '.MAIN_DB_PREFIX.'commande_fournisseurdet AS c_fd ON c_fd.fk_commande = c_f.rowid ';
 		$sql.= 'LEFT JOIN '.MAIN_DB_PREFIX.'product_stock AS p_s ON p_s.fk_product = c_fd.fk_product ';
@@ -576,13 +577,13 @@ class modPMPR extends DolibarrModules
 		$sql.= 'ORDER BY c_f.date_creation DESC';
 
 		// Variables
-		$ignrd_qty = $stock - $qty;
+		$real_qty = $stock - $qty;
 		// Preventing the case where the quantity wanted is higher than the stock
-		if ($ignrd_qty < 0){
-			$ignrd_qty = 0;
+		if ($real_qty < 0){
+			$real_qty = 0;
 		}
-		$tmp_qty = $qty; // To decrease the quantity until all the needed products are considered
-		$unused_qty = $ignrd_qty; // The quantity of product to ignore
+		$tmp_qty = $real_qty; // To decrease the quantity until all the needed products are considered
+		$unused_qty = $qty; // The quantity of product to ignore
 		$total = 0; // The total price of this quantity of the product
 		$real_price = 0; // The result to print on command line
 
@@ -590,7 +591,7 @@ class modPMPR extends DolibarrModules
 		if(!$resql){
 			exit(0);
 		}
-		dol_syslog(" Variables : quantitée : ".$qty." quantitée une fois retiré les produits à ignorer : ".$ignrd_qty);
+		dol_syslog(" Variables : quantitée à ignorer : ".$qty." quantitée à prendre en compte : ".$real_qty);
 		// Looping through the last purchase order for this product to get the needed informations
 		while($tmp_qty > 0){
 			// On each loop, get the next older order
@@ -598,13 +599,33 @@ class modPMPR extends DolibarrModules
 			// Buying price for this purchase order
 			$subprice = $obj_tmp->cf_subprice;
 			// Discount on this product
-			$remise = $obj_tmp->cf_remise;
+			$remise = 1-$obj_tmp->cf_remise/100;
 			// Quantity of this product
 			$prod_qty = $obj_tmp->cf_qty;
-
+			dol_syslog("Infos sur la commande fournisseur qty = ".$prod_qty." remise = ".$remise." et prix unitaire =".$subprice);
 			// Checking if the quantity in the order is less important than the quantity needed for the calculations
 			// To update $tmp_qty depending on $prod_qty
+			if ($prod_qty >= $tmp_qty){
+				// Total HT for the product * remise in percent
+				$total+= ($tmp_qty-$unused_qty)*($subprice*$remise);
+				// All the temporary variables decreased to 0 to exit the loop
+				$tmp_qty = 0;
+				$unused_qty = 0;
+				$real_price = $total / $real_qty;
+			} else {
+				$total+= ($prod_qty-$unused_qty)*($subprice*$remise);
+				// Adapt the formula depending on the comparaison between the quantity left after the command and the quantity wanted
+				if ($unused_qty > $prod_qty){
+					$unused_qty-= $prod_qty;
+				} else {
+					$unused_qty = 0;	
+				}
+				// Update the quantity to break from the loop when needed
+				$tmp_qty-= $prod_qty;
+				dol_syslog("Calcul en cours, pour le moment total = ".$total." avec ".$tmp_qty." produits restants à prendre en compte");
+			}
 
+			/* Old version
 			// A refaire completement car plus du tout adapté dans le cas où on utilise un trigger
 			if ($prod_qty >= $tmp_qty){
 				//$new_pmp = ($new_pmp * ($qty - $tmp_qty) + $tmp_qty * ($subprice * $remise)) / $qty;
@@ -615,7 +636,7 @@ class modPMPR extends DolibarrModules
 				$tmp_qty = 0; // Put all the temporary variables at 0 to break out of the loop
 				$unused_qty = 0;
 				// Division to get the real price for margins
-				$real_price = $total / $ignrd_qty; // Need a new variable to prevent the case where the quantity in the command is more important than the stock
+				$real_price = $total / $real_qty; // Need a new variable to prevent the case where the quantity in the command is more important than the stock
 			} else {
 				//$new_pmp = ($new_pmp * ($qty - $tmp_qty) + ($tmp_qty - $prod_qty) * ($subprice * $remise)) / ($qty - $tmp_qty);
 				$total+= $prod_qty * ($subprice * $remise);
@@ -629,8 +650,10 @@ class modPMPR extends DolibarrModules
 				// Update the quantity to break from the loop when needed
 				$tmp_qty-= $prod_qty;
 			}
+			*/
 		}
-		dol_syslog("total : ".$total." Prix réel : ".$real_price." quantité prise en compte : ".$unused_qty);
+		$db->free($resql);
+		dol_syslog("total : ".$total." Prix réel : ".$real_price." quantité prise en compte : ".$real_qty);
 		return $real_price;
 	}
 }
