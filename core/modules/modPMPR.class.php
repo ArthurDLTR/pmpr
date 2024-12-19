@@ -568,6 +568,11 @@ class modPMPR extends DolibarrModules
 
 		dol_syslog("Stock du produit ".$fk_product." : ".$stock);
 
+		// Simplify the calculus when the stock is at 0
+		if($stock <= 0){
+			return 0;
+		}
+
 		// Request to get the last purchase orders for this product 
 		$sql = 'SELECT c_fd.subprice as cf_subprice, c_fd.remise_percent as cf_remise, c_fd.qty as cf_qty ';
 		$sql.= 'FROM '.MAIN_DB_PREFIX.'commande_fournisseur as c_f ';

@@ -127,6 +127,9 @@ class InterfacePmprTriggers extends DolibarrTriggers
 				$pmpr = new modPMPR($db);
 				$newpmp = $pmpr->calc_PMPR($object->product_id);
 				dol_syslog("PMPR calculé, sa valeur : ".$newpmp);
+				$sql = "UPDATE ".MAIN_DB_PREFIX."product as p SET p.pmp = ".$newpmp;
+				$resql = $this->db->query($sql);
+				$this->db->free($resql);
 			//MYECMDIR
 			//case 'MYECMDIR_CREATE':
 			//case 'MYECMDIR_MODIFY':
