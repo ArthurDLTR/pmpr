@@ -56,6 +56,7 @@ if (!$res) {
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formfile.class.php';
 require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
 require_once DOL_DOCUMENT_ROOT.'/exports/class/export.class.php';
+require_once DOL_DOCUMENT_ROOT.'/product/stock/class/mouvementstock.class.php';
 
 // Load translation files required
 $langs->loadLangs(array("pmpr@pmpr"));
@@ -80,6 +81,31 @@ if (GETPOST('id_prod', 'alpha')){
 }
 
 if (GETPOSTISSET('update-btn', 'bool')){
+//     if (GETPOST('stock_rmv', 'alpha') && GETPOST('id_prod', 'alpha')){
+//         print 'Produit concerné : '.$id_prod.' en quantité : '.$stock_rmv;   
+//         $move = new MouvementStock($db);
+//         $move->create($user, $id_prod, 1, -$stock_rmv, 1, 10, 'Stock mouvement by DLU page', '', dol_now());
+//    }
+
+    // Créer bien la ligne dans la BDD pour les mouvements de stock mais pas la bonne valeur de stock qui change (0 au lieu de $stock_rmv)
+    $object = new Product($db);
+    $result = $object->fetch($id_prod);
+    
+    $result = $object->correct_stock(
+        $user,
+        1,
+        $stock_rmv,
+        1,
+        'Stock mouvement by DLU page',
+        0,
+        '',
+        0,
+        0,
+        0
+    );
+
+    // Part of the code to update Database, useless if the MouvementStock is working
+    /*
     if (GETPOST('stock_rmv', 'alpha') && GETPOST('id_prod', 'alpha')){
         // First request to update the value of reel in product_stock
         $sql = "UPDATE ".MAIN_DB_PREFIX."product_stock as p_s ";
@@ -95,8 +121,8 @@ if (GETPOSTISSET('update-btn', 'bool')){
         $sql.= " WHERE p.rowid = ".$id_prod;
         $resql = $db->query($sql);
         $db->free($resql);
-
     }
+    */
 }
 
 

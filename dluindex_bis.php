@@ -86,7 +86,25 @@ if(GETPOST('id_entrepot', 'alpha')){
     //$sql = "SELECT e.rowid as ent_id, ";
 }
 
-if (GETPOSTISSET('update-btn', 'bool') && GETPOST('stock_rmv', 'alpha') && GETPOST('id_prod', 'alpha')){
+if (GETPOSTISSET('update-btn', 'bool') && GETPOST('stock_rmv', 'alpha') && GETPOST('id_prod', 'alpha') && GETPOST('id_entrepot', 'alpha')){
+    $object = new Product($db);
+    $result = $object->fetch($id_prod);
+    
+    $result = $object->correct_stock(
+        $user,
+        $id_entrepot,
+        $stock_rmv,
+        1,
+        'Stock mouvement by DLU_bis page',
+        0,
+        '',
+        0,
+        0,
+        0
+    );
+
+    // print "Mouvement de stock : ".$id_prod.' entrepot :'.$id_entrepot.' quantité :'.$stock_rmv;
+    /*
     $mv_stock = new MouvementStock($db);
     
     $mv_stock->_create($user, $id_prod, $id_entrepot, -$stock_rmv, 2);
@@ -105,7 +123,7 @@ if (GETPOSTISSET('update-btn', 'bool') && GETPOST('stock_rmv', 'alpha') && GETPO
     $sql.= " WHERE p.rowid = ".$id_prod;
     $resql = $db->query($sql);
     $db->free($resql);
-
+    */
     
 }
 
@@ -152,6 +170,7 @@ print '<th>'.$langs->trans("PRODUCT_REF").'</th>';
 print '<th>'.$langs->trans("PRODUCT_LABEL").'</th>';
 print '<th>'.$langs->trans("QTY_DLU").'</th>';
 print '<th>'.$langs->trans("TOTAL_QTY").'</th>';
+print '<th>'.$langs->trans("WAREHOUSE_CHOICE").'</th>';
 print '<th>'.$langs->trans("BUTTON").'</th>';
 print '</tr>';
 
@@ -214,25 +233,27 @@ if($resql)
                 <input type="hidden" name="stock_rmv" value="'.$stock.'">
                 <input type="hidden" name="id_prod" value="'.$prod->id.'">
                 <select id="id_entrepot" name="id_entrepot">';
-                /* Besoin de revoir ça pour que ça fonctionne car pour le moment, la requête ne remplace pas celle d'au-dessus
-                $sql_bis = 'SELECT e.rowid as entre_rowid, e.ref as entre_ref, e.lieu as lieu FROM '.MAIN_DB_PREFIX.'entrepot AS e';
+                // Besoin de revoir ça pour que ça fonctionne car pour le moment, la requête ne remplace pas celle d'au-dessus
+                $sql_bis = 'SELECT e.rowid as entre_rowid, e.ref as entre_ref, e.lieu as lieu, ps.reel as prod_reel FROM '.MAIN_DB_PREFIX.'entrepot AS e';
+                $sql_bis.= ' LEFT JOIN '.MAIN_DB_PREFIX.'product_stock as ps ON ps.fk_entrepot = e.rowid';
+                $sql_bis.= ' WHERE ps.fk_product = '.$obj->prod_id;
                 $resql_bis = $db->query($sql_bis);
                 $nb_warehouse = $db->num_rows($resql_bis);
-                print '<option></option>';
                 $i = 0;
+                print '<option></option>';
                 while ($i < $nb_warehouse){
-                    $obj_bis = $db->fetch_object($resql);
+                    $obj_bis = $db->fetch_object($resql_bis);
                     foreach($obj_bis as $line){
                         dol_syslog("Ligne de l'objet bis : ".$line);
                     }
-                    print '<option>Entrepot</option>';
-                    print '<option value="'.$obj_bis->entre_rowid.'">'.$obj_bis->lieu.'</option>';
+                    print '<option value="'.$obj_bis->entre_rowid.'">'.$obj_bis->entre_ref.' (stock : '.$obj_bis->prod_reel.')</option>';
                     $i++;
                 }
-                */
                 
-                print '</select>
-                <input class="butAction" name="update-btn" type="submit" value="'.$langs->trans("UPDATE_STOCK").'">
+                
+                print '</select>';
+                print '</td><td>';
+                print '<input class="butAction" name="update-btn" type="submit" value="'.$langs->trans("UPDATE_STOCK").'">
                 </form></td>';
 
                 print '</tr>';

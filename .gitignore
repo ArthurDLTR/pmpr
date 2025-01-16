@@ -1,0 +1,6 @@
+.gitattributes
+.gitignore
+pmprindex.php
+.editorconfig
+modulebuilder.txt
+.tx/config
