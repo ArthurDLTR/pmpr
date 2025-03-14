@@ -1,0 +1,72 @@
+# Copyright (C) 2024 Arthur LENOBLE
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+#
+# Generic
+#
+
+# Module label 'ModulePMPRName'
+ModulePMPRName = PMPR
+# Module description 'ModulePMPRDesc'
+ModulePMPRDesc = Module pour améliorer le PMP calculé par Dolibarr en prenant en compte les sorties de stocks dans la détermination du PMP pour chaque produit
+
+#
+# Admin page
+#
+PMPRSetup = Paramètres PMPR
+Settings = Paramètres
+PMPRSetupPage = PMPR page des paramètres
+NewSection=New section
+PMPR_YESNO = Activer le calcul dynamique du PMP
+DLU_YESNO = Activer la page pour les produits DLU
+PMPR_MYPARAM1Tooltip = My param 1 tooltip
+PMPR_MYPARAM2=My param 2
+PMPR_MYPARAM2Tooltip=My param 2 tooltip
+
+
+#
+# About page
+#
+About = A propos
+PMPRAbout = A propos du PMPR
+PMPRAboutPage = PMPR Page A propos
+
+#
+# Devalued products page
+#
+DLU = Durée limite d'utilisation
+DLUProducts = Produits DLU
+DLUArea = Page pour produits dévalués
+LIMIT_PERIOD = Période limite
+REFRESH = Rafraichir
+PRODUCT_REF = Ref. produit
+PRODUCT_LABEL = Nom du produit
+QTY_DLU = Quantité dévaluée
+QTY = Quantité en stock
+TOTAL_QTY = Quantité totale en stock
+BUTTON = Bouton
+UPDATE_STOCK = Actualiser
+WAREHOUSE_CHOICE = Choix de l'entrepôt
+
+#
+# Fields in select list in commands
+#
+LATEST_PRICE = Latest price 
+
+#
+# Sample widget
+#
+MyWidget = Mon widget
+MyWidgetDescription = Ma widget description
