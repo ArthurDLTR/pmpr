@@ -1040,7 +1040,7 @@ if (!empty($usemargins) && $user->hasRight('margins', 'creer')) {
                      ?>';
 
 					var pmpr = '<?php
-						echo $pmpr->calc_PMPR("".'+jQuery(\"#idprod\").val()+');
+						//echo $pmpr->calc_PMPR("".'+jQuery(\"#idprod\").val()+');
 					?>';
                     console.log("PMPR calculé : "+pmpr);
 					console.log('id = '+jQuery('#idprod').val());
